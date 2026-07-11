@@ -25,11 +25,15 @@ If output is omitted, the HTML will be written to `<INPUT>.html` in the same
 folder as the input file.  
 If the title is omitted, the first heading in the Markdown file will be used.
 
+## Example
+
 To see an example, run:
 
 ```sh
-python3 generate.py example.md && open example.html
+python generate.py README.md && open README.html
 ```
+
+or open [this repo website](https://epistrephein.github.io/cuneiform/) in your browser.
 
 ## License
 
