@@ -1,0 +1,110 @@
+</article>
+<script>
+/* Collapsible sidebar Table of Contents (progressive enhancement).
+   Works for any pandoc --toc output (a <nav id="TOC">). If JS is off, the
+   stylesheet leaves the TOC as a normal boxed block at the top. */
+(function () {
+  var toc = document.getElementById('TOC');
+  if (!toc) return;
+
+  var root = document.documentElement;
+  var wide = window.matchMedia('(min-width: 1000px)');
+
+  var btn = document.createElement('button');
+  btn.id = 'toc-toggle';
+  btn.type = 'button';
+  btn.setAttribute('aria-controls', 'TOC');
+  btn.setAttribute('aria-label', 'Toggle table of contents');
+
+  var backdrop = document.createElement('div');
+  backdrop.id = 'toc-backdrop';
+  backdrop.setAttribute('aria-hidden', 'true');
+
+  document.body.appendChild(btn);
+  document.body.appendChild(backdrop);
+
+  function setOpen(open) {
+    root.classList.toggle('toc-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.innerHTML = open ? '✕' : '☰'; /* close  /  hamburger */
+    try { localStorage.setItem('qaTocOpen', open ? '1' : '0'); } catch (e) {}
+  }
+
+  root.classList.add('toc-ready');
+
+  /* initial state: remembered choice, else closed (clean main view) */
+  var saved = null;
+  try { saved = localStorage.getItem('qaTocOpen'); } catch (e) {}
+  setOpen(saved === '1');
+
+  btn.addEventListener('click', function () {
+    setOpen(!root.classList.contains('toc-open'));
+  });
+  backdrop.addEventListener('click', function () { setOpen(false); });
+
+  /* on narrow (overlay) screens, close after jumping to a section */
+  toc.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('a') : null;
+    if (a && !wide.matches) setOpen(false);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && root.classList.contains('toc-open')) setOpen(false);
+  });
+})();
+</script>
+<script>
+/* Light/dark theme switch. Flips <html data-theme> and swaps which inlined
+   github-markdown <style> applies via the `media` attribute (no FOUC).
+   Remembered in localStorage; CSS chooses the moon/sun icon. */
+(function () {
+  var d = document.documentElement;
+  var light = document.getElementById('ghmd-light');
+  var dark  = document.getElementById('ghmd-dark');
+  if (!light || !dark) return;
+
+  var btn = document.createElement('button');
+  btn.id = 'theme-toggle';
+  btn.className = 'theme-toggle';
+  btn.type = 'button';
+  btn.innerHTML =
+    '<svg class="icon-moon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">' +
+      '<path d="M12.5 9a6 6 0 0 1-7.5-7.5A5.5 5.5 0 1 0 12.5 9z" fill="currentColor"/>' +
+    '</svg>' +
+    '<svg class="icon-sun" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">' +
+      '<circle cx="7" cy="7" r="2.5" fill="currentColor"/>' +
+      '<line x1="7" y1="0.5" x2="7" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="7" y1="11.5" x2="7" y2="13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="0.5" y1="7" x2="2.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="11.5" y1="7" x2="13.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="2.55" y1="2.55" x2="3.96" y2="3.96" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="10.04" y1="10.04" x2="11.45" y2="11.45" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="11.45" y1="2.55" x2="10.04" y2="3.96" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<line x1="3.96" y1="10.04" x2="2.55" y2="11.45" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' +
+    '</svg>';
+
+  function isDark() { return d.getAttribute('data-theme') === 'dark'; }
+
+  function render() {
+    var dk = isDark();
+    btn.title = dk ? 'Switch to light theme' : 'Switch to dark theme';
+    btn.setAttribute('aria-label', btn.title);
+    btn.setAttribute('aria-pressed', dk ? 'true' : 'false');
+  }
+
+  function apply(theme) {
+    d.setAttribute('data-theme', theme);
+    dark.media  = (theme === 'dark') ? 'all' : 'not all';
+    light.media = (theme === 'dark') ? 'not all' : 'all';
+    try { localStorage.setItem('qaTheme', theme); } catch (e) {}
+    render();
+  }
+
+  document.body.appendChild(btn);
+  render();
+
+  btn.addEventListener('click', function () {
+    apply(isDark() ? 'light' : 'dark');
+  });
+})();
+</script>

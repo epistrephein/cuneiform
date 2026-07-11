@@ -1,0 +1,134 @@
+<!-- Both themes are inlined and switched via the media attribute so toggling is
+     instant (a media="not all" sheet is still parsed, just not applied) so no flash.
+     Without JS, only the light sheet matches, so light shows.
+     The two style blocks below are filled with the theme CSS at build time. -->
+<style id="ghmd-light" media="all">
+@@GHMD_LIGHT_CSS@@
+</style>
+<style id="ghmd-dark" media="not all">
+@@GHMD_DARK_CSS@@
+</style>
+<style>
+  /* ===== Palette (drives the container + floating chrome; the .markdown-body
+           TEXT colours come from the github-markdown light/dark stylesheets) ===== */
+  :root {
+    --page-bg:      #f6f8fa;
+    --card-bg:      #ffffff;
+    --border:       #d0d7de;
+    --sidebar-bg:   #ffffff;
+    --toc-box-bg:   #f6f8fa;
+    --chip-fg:      #24292f;
+    --chip-bg:      #ffffff;
+    --chip-bg-hover:#f3f4f6;
+    --backdrop:     rgba(27,31,36,.35);
+    --shadow:       rgba(27,31,36,.12);
+  }
+  html[data-theme="dark"] {
+    --page-bg:      #010409;
+    --card-bg:      #0d1117;
+    --border:       #30363d;
+    --sidebar-bg:   #0d1117;
+    --toc-box-bg:   #161b22;
+    --chip-fg:      #c9d1d9;
+    --chip-bg:      #21262d;
+    --chip-bg-hover:#30363d;
+    --backdrop:     rgba(1,4,9,.55);
+    --shadow:       rgba(1,4,9,.5);
+  }
+
+  /* ===== Layout ===== */
+  html { font-size: 16px; background-color: var(--page-bg); }
+  body { max-width: none; margin: 0; padding: 0; background-color: var(--page-bg); }
+  .markdown-body {
+    box-sizing: border-box; min-width: 200px; max-width: 980px;
+    margin: 2rem auto; padding: 45px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  @media (max-width: 767px) {
+    .markdown-body { padding: 20px; margin: 0; border: 0; border-radius: 0; }
+  }
+
+  /* ===== TOC fallback (no JS): boxed block at the top ===== */
+  nav#TOC {
+    background: var(--toc-box-bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 1em 1.4em .4em; margin-bottom: 24px; font-size: .95em;
+  }
+  nav#TOC::before { content: "Contents"; font-weight: 600; display: block; margin-bottom: .5em; }
+  nav#TOC ul { margin-bottom: .6em; }
+  nav#TOC li { margin-bottom: .1em; }
+
+  /* ===== Floating controls (created by JS) ===== */
+  #toc-toggle, #theme-toggle {
+    position: fixed; top: 12px; z-index: 1002;
+    width: 40px; height: 40px; padding: 0;
+    align-items: center; justify-content: center;
+    font-size: 18px; line-height: 1; cursor: pointer;
+    color: var(--chip-fg); background: var(--chip-bg);
+    border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  #toc-toggle   { left: 12px;  display: none; font-size: 18px; }   /* shown when .toc-ready */
+  #theme-toggle { right: 12px; display: flex; }                    /* always available */
+  #toc-toggle:hover, #theme-toggle:hover { background: var(--chip-bg-hover); }
+
+  /* Theme button icons: moon in light mode, sun in dark mode */
+  #theme-toggle svg { display: block; }
+  #theme-toggle .icon-sun { display: none; }
+  html[data-theme="dark"] #theme-toggle .icon-moon { display: none; }
+  html[data-theme="dark"] #theme-toggle .icon-sun  { display: block; }
+
+  #toc-backdrop {
+    position: fixed; inset: 0; z-index: 1000; border: 0;
+    background: var(--backdrop);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease;
+  }
+
+  /* ===== JS enhanced: sliding sidebar drawer ===== */
+  .toc-ready #toc-toggle { display: flex; }
+  .toc-ready nav#TOC {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 1001; box-sizing: border-box;
+    width: 288px; overflow-y: auto; overscroll-behavior: contain;
+    margin: 0; border: 0; border-right: 1px solid var(--border); border-radius: 0;
+    background: var(--sidebar-bg); padding: 64px 20px 40px;
+    transform: translateX(-100%); transition: transform .22s ease;
+    -webkit-overflow-scrolling: touch;
+  }
+  .toc-ready nav#TOC::before { font-size: 1.05em; }
+  .toc-ready.toc-open nav#TOC { transform: translateX(0); }
+  .toc-ready.toc-open #toc-backdrop { opacity: 1; visibility: visible; }
+
+  /* Wide screens: reserve space (push) rather than overlay */
+  @media (min-width: 1000px) {
+    .toc-ready.toc-open body { padding-left: 288px; }
+    .toc-ready.toc-open #toc-backdrop { display: none; }
+  }
+
+  /* Print: light, normal block, no controls */
+  @media print {
+    html, body { background: #fff; padding-left: 0 !important; }
+    .markdown-body { border: 0; max-width: none; padding: 0; margin: 0; }
+    #toc-toggle, #theme-toggle, #toc-backdrop { display: none !important; }
+    .toc-ready nav#TOC {
+      position: static; transform: none; width: auto; height: auto;
+      border: 1px solid var(--border); border-radius: 6px; padding: 1em 1.4em .4em;
+      break-after: page;
+    }
+  }
+</style>
+<!-- Apply saved theme + enable sidebar CSS before first paint (no flash). -->
+<script>
+  (function () {
+    var d = document.documentElement;
+    d.classList.add('toc-ready');
+    var t = 'light';
+    try { t = localStorage.getItem('qaTheme') || 'light'; } catch (e) {}
+    d.setAttribute('data-theme', t);
+    var light = document.getElementById('ghmd-light');
+    var dark  = document.getElementById('ghmd-dark');
+    if (light && dark) {
+      dark.media  = (t === 'dark') ? 'all' : 'not all';
+      light.media = (t === 'dark') ? 'not all' : 'all';
+    }
+  })();
+</script>
