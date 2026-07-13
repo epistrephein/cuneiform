@@ -18,7 +18,7 @@ brew install pandoc
 ## Usage
 
 ```sh
-python3 generate.py INPUT.md [-o OUTPUT.html] [-t "Title"]
+python3 cuneiform.py INPUT.md [-o OUTPUT.html] [-t "Title"]
 ```
 
 If output is omitted, the HTML will be written to `<INPUT>.html` in the same
@@ -30,7 +30,7 @@ If the title is omitted, the first heading in the Markdown file will be used.
 To see an example, run:
 
 ```sh
-python generate.py README.md && open README.html
+python cuneiform.py README.md && open README.html
 ```
 
 or open [this repo website](https://epistrephein.github.io/cuneiform/) in your browser.

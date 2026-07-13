@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-generate.py — Markdown -> GitHub-styled, self-contained HTML page.
+cuneiform.py — Markdown -> GitHub-styled, self-contained HTML page.
 
 Reproduces the look & behaviour of exam/QA-github.html:
   * GitHub Markdown CSS (light + dark), switchable with a top-right moon/sun
@@ -26,7 +26,7 @@ Requirements
   pandoc
 
 Usage
-  python generate.py INPUT.md [-o OUTPUT.html] [-t "Page title"]
+  python cuneiform.py INPUT.md [-o OUTPUT.html] [-t "Page title"]
 
   -o/--output  Output path (default: INPUT with a .html suffix).
   -t/--title   Browser-tab title (default: the first level-1 heading, else the
